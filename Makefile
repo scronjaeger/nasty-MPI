@@ -1,6 +1,6 @@
 include Makefile.DEF
 
-CFLAGS=-O3 -std=c11 $(OPTFLAGS) -Isrc -Werror -pedantic -Wextra -Wall
+CFLAGS=-O3 -std=c11 $(OPTFLAGS) -Isrc -pedantic -Wextra -Wall
 LIBS=$(OPTLIBS)
 PREFIX?=/usr/local
 
