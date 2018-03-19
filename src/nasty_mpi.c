@@ -15,7 +15,8 @@ int MPI_Init(int *argc, char ***argv)
   int result = PMPI_Init(argc, argv);
 
   if (result == MPI_SUCCESS) {
-    nasty_mpi_init(argc, argv);
+    //nasty_mpi_init(argc, argv);
+    //TODO create shared memory with getpid() offset
   }
 
   return result;
@@ -28,7 +29,8 @@ int MPI_Win_allocate(MPI_Aint size, int disp_unit, MPI_Info info,
 
   if (result == MPI_SUCCESS)
   {
-    nasty_win_init(*win, comm, disp_unit);
+    //nasty_win_init(*win, comm, disp_unit);
+    //TODO Check if problem, or if it can be left out
   }
 
   return result;
@@ -41,7 +43,8 @@ int MPI_Win_create(void *base, MPI_Aint size, int disp_unit,
 
   if (result == MPI_SUCCESS)
   {
-    nasty_win_init(*win, comm, disp_unit);
+    //nasty_win_init(*win, comm, disp_unit);
+    //TODO Check if problem, or if it can be left out
   }
 
   return result;
@@ -54,7 +57,8 @@ int MPI_Win_create_dynamic(MPI_Info info, MPI_Comm comm, MPI_Win *win)
 
   if (result == MPI_SUCCESS)
   {
-    nasty_win_init(*win, comm, sizeof(char));
+    //nasty_win_init(*win, comm, sizeof(char));
+    //TODO Check if problem, or if it can be left out
   }
 
   return result;
@@ -67,7 +71,8 @@ int MPI_Win_allocate_shared(MPI_Aint size, int disp_unit, MPI_Info info, MPI_Com
 
   if (result == MPI_SUCCESS)
   {
-    nasty_win_init(*win, comm, disp_unit);
+    //nasty_win_init(*win, comm, disp_unit);
+    //TODO Check if problem, or if it can be left out
   }
 
   return result;
@@ -77,7 +82,11 @@ int MPI_Win_lock_all(int assert, MPI_Win win)
 {
   int rc = PMPI_Win_lock_all(assert, win);
 
-  if (rc == MPI_SUCCESS) nasty_win_lock(win);
+  if (rc == MPI_SUCCESS) //nasty_win_lock(win);
+{
+	//TODO there shouldn't be anything to be done here, everything should be done in unlock
+}
+  
 
   return rc;
 }
@@ -86,8 +95,10 @@ int MPI_Win_lock(int lock_type, int rank, int assert, MPI_Win win)
 {
   int rc = PMPI_Win_lock(lock_type, rank, assert, win);
 
-  if (rc == MPI_SUCCESS) nasty_win_lock(win);
-
+  if (rc == MPI_SUCCESS) //nasty_win_lock(win);
+{
+	//TODO there shouldn't be anything to be done here, everything should be done in unlock
+{
   return rc;
 }
 
@@ -95,113 +106,64 @@ int MPI_Put(const void *origin_addr, int origin_count, MPI_Datatype origin_datat
             int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
             MPI_Win win)
 {
-  debug("--caching put---\n"
-        "origin_addr: %p\n"
-        "origin_count: %d\n"
-        "target_rank: %d\n"
-        "target_disp: %td\n"
-        "target_count: %d\n",
-        origin_addr, origin_count,
-        target_rank, target_disp, target_count
-       );
-  Nasty_mpi_op op_info;
-  op_info.type = rma_put;
-  op_info.target_rank = target_rank;
-  _map_put_get_attrs(op_info.data.put);
-
-  if (nasty_mpi_handle_op(win, &op_info) != MPI_SUCCESS) {
+	//TODO push PUT, origin_addr, origin_count and datatype in shared memory dArray
     return PMPI_Put(origin_addr, origin_count, origin_datatype,
                     target_rank, target_disp, target_count, target_datatype,
                     win);
-
-  }
-
-  return MPI_SUCCESS;
 }
 
 int MPI_Get(void *origin_addr, int origin_count, MPI_Datatype origin_datatype,
             int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
             MPI_Win win)
 {
-  debug("--caching get---\n"
-        "origin_addr: %p\n"
-        "origin_count: %d\n"
-        "target_rank: %d\n"
-        "target_disp: %td\n"
-        "target_count: %d\n",
-        origin_addr, origin_count,
-        target_rank, target_disp, target_count
-       );
-  Nasty_mpi_op op_info;
-  op_info.type = rma_get;
-  op_info.target_rank = target_rank;
-  _map_put_get_attrs(op_info.data.get);
-
-  if (nasty_mpi_handle_op(win, &op_info) != MPI_SUCCESS) {
+	//TODO push GET, origin_addr, origin_count and datatype in shared memory dArray
     return PMPI_Get(origin_addr, origin_count, origin_datatype,
                     target_rank, target_disp, target_count, target_datatype,
                     win);
 
-  }
 
-  return MPI_SUCCESS;
 }
 
 int MPI_Win_flush(int rank, MPI_Win win)
 {
-  debug("--MPI_Win_flush--- %d", 0);
-  //execute all cached calls
-  nasty_mpi_execute_cached_calls(win, rank, false);
+	//TODO Do the same as in unlock
   return PMPI_Win_flush(rank, win);
 }
 
 int MPI_Win_flush_all(MPI_Win win)
 {
-  //execute all cached calls
-  nasty_mpi_execute_cached_calls(win, EXECUTE_OPS_OF_ANY_RANK, false);
+	//TODO Do the same as in unlock
   return PMPI_Win_flush_all(win);
 }
 
 int MPI_Win_flush_local(int rank, MPI_Win win)
 {
-  //execute all cached calls
-  nasty_mpi_execute_cached_calls(win, rank, false);
+	//TODO Do the same as in unlock
   return PMPI_Win_flush_local(rank, win);
 }
 
 int MPI_Win_flush_local_all(MPI_Win win)
 {
-  //execute all cached calls
-  nasty_mpi_execute_cached_calls(win, EXECUTE_OPS_OF_ANY_RANK, false);
+	//TODO Do the same as in unlock
   return PMPI_Win_flush_local_all(win);
 }
 
 int MPI_Win_unlock_all(MPI_Win win)
 {
-  //execute all cached calls
-  int rc = nasty_mpi_execute_cached_calls(win, EXECUTE_OPS_OF_ANY_RANK, true);
-  //unlock nasty window
-  nasty_win_unlock(win);
-
-  if (rc != MPI_SUCCESS) return rc;
-  //do real unock
+	//TODO Do the same as in unlock
   return PMPI_Win_unlock_all(win);
 }
 
 int MPI_Win_unlock(int rank, MPI_Win win)
 {
-  //execute all cached calls
-  int rc = nasty_mpi_execute_cached_calls(win, rank, true);
-  //unlock nasty window
-  nasty_win_unlock(win);
-
-  if (rc != MPI_SUCCESS) return rc;
+	//TODO Perform collision tests between gets and puts, then native ops and gets and puts
+	//Free all dArrays
   //do real unock
   return PMPI_Win_unlock(rank, win);
 }
 
 int MPI_Finalize(void)
 {
-  nasty_mpi_finalize();
+  //TODO Free/detach all shared memories
   return PMPI_Finalize();
 }
